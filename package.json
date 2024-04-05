@@ -1,8 +1,8 @@
 {
-  "name": "experiment-extensions",
+  "name": "experimental-extensions",
   "version": "0.0.0",
-  "repositoryName": "Experiment Extensions (0.9)",
-  "description": "Experiment extensions for 0.9!",
+  "repositoryName": "Experimental Extensions (0.9)",
+  "description": "Experimental extensions for 0.9!",
   "main": "index.js",
   "scripts": {
     "bundle": "npx paperback-cli bundle",
