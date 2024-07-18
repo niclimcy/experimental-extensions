@@ -17982,7 +17982,7 @@ var source = (() => {
       request.headers = {
         ...request.headers ?? {},
         ...{
-          referer: `${MCR_DOMAIN}/`,
+          "referer": `${MCR_DOMAIN}/`,
           "user-agent": await Application.getDefaultUserAgent()
         }
       };
