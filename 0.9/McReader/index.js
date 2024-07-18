@@ -18034,6 +18034,13 @@ var source = (() => {
         value: "AND",
         title: "Include Operator"
       });
+      Application.registerSearchFilter({
+        id: "excludeOperator",
+        type: "dropdown",
+        options: [{ id: "AND", value: "AND" }, { id: "OR", value: "OR" }],
+        value: "OR",
+        title: "Exclude Operator"
+      });
       const searchTags = await this.getSearchTags();
       for (const tags of searchTags) {
         Application.registerSearchFilter({
@@ -18041,7 +18048,7 @@ var source = (() => {
           options: tags.tags.map((x) => ({ id: x.id, value: x.title })),
           id: tags.id,
           allowExclusion: false,
-          title: tags.title,
+          title: tags.title ?? "",
           value: {}
         });
       }
