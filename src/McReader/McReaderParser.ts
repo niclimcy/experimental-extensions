@@ -4,10 +4,10 @@ import {
     Tag,
     SearchResultItem,
     SourceManga,
-    SimpleCarouselDiscoverItem,
+    DiscoverSectionItem,
     TagSection,
     MangaInfo,
-    ContentRating,
+    ContentRating
 } from '@paperback/types'
 
 
@@ -34,10 +34,8 @@ export const parseMangaDetails = ($: cheerio.Root, mangaId: string): SourceManga
         const id = encodeURI($(tag).text().trim())
 
         if (!id || !title) continue
-        // @ts-ignore - paper forgot to update lol
         arrayTags.push({ id: id, title: title })
     }
-    // @ts-ignore - paper forgot to update lol
     const tagSections: TagSection[] = [{ id: '0', title: 'genres', tags: arrayTags }]
 
     const rawStatus = $('small:contains(Status)', 'div.header-stats').prev().text().trim()
@@ -64,7 +62,7 @@ export const parseMangaDetails = ($: cheerio.Root, mangaId: string): SourceManga
             contentRating: ContentRating.MATURE,
             status: status,
             author: author,
-            tagGroups: tagSections,
+            tagGroups: tagSections
         } as MangaInfo
     } as SourceManga
 }
@@ -125,8 +123,8 @@ export const parseChapterDetails = ($: cheerio.Root, chapter: Chapter): ChapterD
     }
 }
 
-export const parseViewMore = ($: cheerio.Root): SimpleCarouselDiscoverItem[] => {
-    const manga: SimpleCarouselDiscoverItem[] = []
+export const parseViewMore = ($: cheerio.Root): DiscoverSectionItem[] => {
+    const manga: DiscoverSectionItem[] = []
     const collectedIds: string[] = []
 
     for (const obj of $('li.novel-item', 'ul.novel-list').toArray()) {
@@ -156,14 +154,14 @@ export const parseViewMore = ($: cheerio.Root): SimpleCarouselDiscoverItem[] => 
 
 export const parseTags = ($: cheerio.Root): TagSection[] => {
     const arrayTags: Tag[] = []
-    for (const tag of $('label.checkbox-inline', 'div.container').toArray()) {
-        const label = $(tag).text().trim() ?? ''
-        const id = $('input', tag).attr('value') ?? ''
+    for (const tag of $('.proplist a').toArray()) {
+        const title = $(tag).attr('title') ?? ''
 
-        if (!id || !label) continue
-        arrayTags.push({ id: id, label: label })
+        if (!title) continue
+        arrayTags.push({ id: title, title: title })
     }
-    const tagSections: TagSection[] = [{ id: '0', label: 'genres', tags: arrayTags }]
+
+    const tagSections: TagSection[] = [{ id: 'genres', title: 'genres', tags: arrayTags }]
     return tagSections
 }
 

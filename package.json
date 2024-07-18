@@ -13,7 +13,7 @@
   "author": "Netsky",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "@tsconfig/recommended": "^1.0.3",
+    "@tsconfig/recommended": "^1.0.7",
     "@types/cheerio": "^0.22.35",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
@@ -22,11 +22,11 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
-    "@paperback/toolchain": "^1.0.0-alpha.12",
-    "@paperback/types": "^1.0.0-alpha.12",
+    "@paperback/toolchain": "^1.0.0-alpha.20",
+    "@paperback/types": "^1.0.0-alpha.20",
     "cheerio": "^1.0.0-rc.12",
     "entities": "^4.5.0",
-    "nodemon": "^3.0.3",
+    "nodemon": "^3.1.4",
     "ts-node": "^10.9.2"
   }
 }
