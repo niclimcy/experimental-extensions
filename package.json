@@ -15,6 +15,7 @@
   "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@eslint/js": "^9.7.0",
+    "@stylistic/eslint-plugin": "^2.3.0",
     "@tsconfig/recommended": "^1.0.7",
     "@types/cheerio": "^0.22.35",
     "@types/eslint__js": "^8.42.3",

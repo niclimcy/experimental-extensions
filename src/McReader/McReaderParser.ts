@@ -1,215 +1,212 @@
 import {
-    Chapter,
-    ChapterDetails,
-    Tag,
-    SearchResultItem,
-    SourceManga,
-    DiscoverSectionItem,
-    TagSection,
-    MangaInfo,
-    ContentRating
+  Chapter,
+  ChapterDetails,
+  Tag,
+  SearchResultItem,
+  SourceManga,
+  DiscoverSectionItem,
+  TagSection,
+  MangaInfo,
+  ContentRating,
 } from '@paperback/types'
-
 
 import entities = require('entities')
 
 export const parseMangaDetails = ($: cheerio.Root, mangaId: string): SourceManga => {
-    const primaryTitle = $('.novel-title').text().trim()
+  const primaryTitle = $('.novel-title').text().trim()
 
-    const secondaryTitles: string[] = []
-    secondaryTitles.push(decodeHTMLEntity($('img', 'div.fixed-img').attr('alt')?.trim() ?? ''))
-    const altTitles = $('h2.alternative-title.text1row', 'div.main-head').text().trim().split(',')
-    for (const title of altTitles) {
-        secondaryTitles.push(decodeHTMLEntity(title))
-    }
+  const secondaryTitles: string[] = []
+  secondaryTitles.push(decodeHTMLEntity($('img', 'div.fixed-img').attr('alt')?.trim() ?? ''))
+  const altTitles = $('h2.alternative-title.text1row', 'div.main-head').text().trim().split(',')
+  for (const title of altTitles) {
+    secondaryTitles.push(decodeHTMLEntity(title))
+  }
 
-    const image = $('img', 'div.fixed-img').attr('data-src') ?? ''
-    const author = $('span', 'div.author').next().text().trim()
-    
-    const description = decodeHTMLEntity($('.description').first().text().trim())
+  const image = $('img', 'div.fixed-img').attr('data-src') ?? ''
+  const author = $('span', 'div.author').next().text().trim()
 
-    const arrayTags: Tag[] = []
-    for (const tag of $('li', 'div.categories').toArray()) {
-        const title = $(tag).text().trim()
-        const id = encodeURI($(tag).text().trim())
+  const description = decodeHTMLEntity($('.description').first().text().trim())
 
-        if (!id || !title) continue
-        arrayTags.push({ id: id, title: title })
-    }
-    const tagSections: TagSection[] = [{ id: '0', title: 'genres', tags: arrayTags }]
+  const arrayTags: Tag[] = []
+  for (const tag of $('li', 'div.categories').toArray()) {
+    const title = $(tag).text().trim()
+    const id = encodeURI($(tag).text().trim())
 
-    const rawStatus = $('small:contains(Status)', 'div.header-stats').prev().text().trim()
-    let status = 'ONGOING'
-    switch (rawStatus.toUpperCase()) {
-        case 'ONGOING':
-            status = 'Ongoing'
-            break
-        case 'COMPLETED':
-            status = 'Completed'
-            break
-        default:
-            status = 'Ongoing'
-            break
-    }
+    if (!id || !title) continue
+    arrayTags.push({ id: id, title: title })
+  }
+  const tagSections: TagSection[] = [{ id: '0', title: 'genres', tags: arrayTags }]
 
-    return {
-        mangaId: mangaId,
-        mangaInfo: {
-            thumbnailUrl: image,
-            synopsis: description,
-            primaryTitle: primaryTitle,
-            secondaryTitles: secondaryTitles,
-            contentRating: ContentRating.MATURE,
-            status: status,
-            author: author,
-            tagGroups: tagSections
-        } as MangaInfo
-    } as SourceManga
+  const rawStatus = $('small:contains(Status)', 'div.header-stats').prev().text().trim()
+  let status = 'ONGOING'
+  switch (rawStatus.toUpperCase()) {
+    case 'ONGOING':
+      status = 'Ongoing'
+      break
+    case 'COMPLETED':
+      status = 'Completed'
+      break
+    default:
+      status = 'Ongoing'
+      break
+  }
+
+  return {
+    mangaId: mangaId,
+    mangaInfo: {
+      thumbnailUrl: image,
+      synopsis: description,
+      primaryTitle: primaryTitle,
+      secondaryTitles: secondaryTitles,
+      contentRating: ContentRating.MATURE,
+      status: status,
+      author: author,
+      tagGroups: tagSections,
+    } as MangaInfo,
+  } as SourceManga
 }
 
 export const parseChapters = ($: cheerio.Root, sourceManga: SourceManga): Chapter[] => {
-    const chapters: Chapter[] = []
-    let sortingIndex = 0
+  const chapters: Chapter[] = []
+  let sortingIndex = 0
 
-    for (const chapter of $('li', 'ul.chapter-list').toArray()) {
-        const title = decodeHTMLEntity($('strong.chapter-title', chapter).text().trim())
-        const chapterId: string = $('a', chapter).attr('href')?.replace(/\/$/, '').split('/').pop() ?? ''
-        if (!chapterId) continue
+  for (const chapter of $('li', 'ul.chapter-list').toArray()) {
+    const title = decodeHTMLEntity($('strong.chapter-title', chapter).text().trim())
+    const chapterId: string = $('a', chapter).attr('href')?.replace(/\/$/, '').split('/').pop() ?? ''
+    if (!chapterId) continue
 
-        const datePieces = $('time.chapter-update', chapter).attr('datetime')?.split(',') ?? []
-        const date = new Date(String(`${datePieces[0] ?? ''}, ${datePieces[1] ?? ''}`))
-        const chapNumRegex = title.match(/(\d+)(?:[-.]\d+)?/)
+    const datePieces = $('time.chapter-update', chapter).attr('datetime')?.split(',') ?? []
+    const date = new Date(String(`${datePieces[0] ?? ''}, ${datePieces[1] ?? ''}`))
+    const chapNumRegex = title.match(/(\d+)(?:[-.]\d+)?/)
 
-        let chapNum = 0
-        if (chapNumRegex?.[1]) {
-            let chapRegex = chapNumRegex[1]
-            if (chapRegex.includes('-')) chapRegex = chapRegex.replace('-', '.')
-            chapNum = Number(chapRegex)
-        }
-
-        chapters.push({
-            chapterId: chapterId,
-            sourceManga: sourceManga,
-            langCode: '🇬🇧',
-            chapNum: chapNum,
-            title: `Chapter ${chapNum.toString()}`,
-            volume: 0,
-            publishDate: date,
-            sortingIndex
-        })
-        sortingIndex++
+    let chapNum = 0
+    if (chapNumRegex?.[1]) {
+      let chapRegex = chapNumRegex[1]
+      if (chapRegex.includes('-')) chapRegex = chapRegex.replace('-', '.')
+      chapNum = Number(chapRegex)
     }
 
-    if (chapters.length == 0) {
-        throw new Error(`Couldn't find any chapters for mangaId: ${sourceManga.mangaId}!`)
-    }
+    chapters.push({
+      chapterId: chapterId,
+      sourceManga: sourceManga,
+      langCode: '🇬🇧',
+      chapNum: chapNum,
+      title: `Chapter ${chapNum.toString()}`,
+      volume: 0,
+      publishDate: date,
+      sortingIndex,
+    })
+    sortingIndex++
+  }
 
-    return chapters
+  if (chapters.length == 0) {
+    throw new Error(`Couldn't find any chapters for mangaId: ${sourceManga.mangaId}!`)
+  }
+
+  return chapters
 }
 
 export const parseChapterDetails = ($: cheerio.Root, chapter: Chapter): ChapterDetails => {
-    const pages: string[] = []
-    for (const img of $('img', 'div#chapter-reader').toArray()) {
-        let image = $(img).attr('src') ?? ''
-        if (!image) image = $(img).attr('data-src') ?? ''
-        if (!image) continue
-        pages.push(image)
-    }
+  const pages: string[] = []
+  for (const img of $('img', 'div#chapter-reader').toArray()) {
+    let image = $(img).attr('src') ?? ''
+    if (!image) image = $(img).attr('data-src') ?? ''
+    if (!image) continue
+    pages.push(image)
+  }
 
-    return {
-        id: chapter.chapterId,
-        mangaId: chapter.sourceManga.mangaId,
-        pages: pages
-    }
+  return {
+    id: chapter.chapterId,
+    mangaId: chapter.sourceManga.mangaId,
+    pages: pages,
+  }
 }
 
 export const parseViewMore = ($: cheerio.Root): DiscoverSectionItem[] => {
-    const manga: DiscoverSectionItem[] = []
-    const collectedIds: string[] = []
+  const manga: DiscoverSectionItem[] = []
+  const collectedIds: string[] = []
 
-    for (const obj of $('li.novel-item', 'ul.novel-list').toArray()) {
-        const image: string = $('img', obj).first().attr('data-src') ?? ''
-        const title: string = $('img', obj).first().attr('alt') ?? ''
-        const id = $('a', obj).attr('href')?.replace(/\/$/, '').split('/').pop() ?? ''
-        const getChapter = $('div.novel-stats > strong', obj).text().trim()
+  for (const obj of $('li.novel-item', 'ul.novel-list').toArray()) {
+    const image: string = $('img', obj).first().attr('data-src') ?? ''
+    const title: string = $('img', obj).first().attr('alt') ?? ''
+    const id = $('a', obj).attr('href')?.replace(/\/$/, '').split('/').pop() ?? ''
+    const getChapter = $('div.novel-stats > strong', obj).text().trim()
 
-        const chapNumRegex = getChapter.match(/(\d+\.?\d?)+/)
-        let chapNum = 0
-        if (chapNumRegex?.[1]) chapNum = Number(chapNumRegex[1])
+    const chapNumRegex = getChapter.match(/(\d+\.?\d?)+/)
+    let chapNum = 0
+    if (chapNumRegex?.[1]) chapNum = Number(chapNumRegex[1])
 
-        const subtitle = chapNum ? `Chapter ${chapNum.toString()}` : 'Chapter N/A'
+    const subtitle = chapNum ? `Chapter ${chapNum.toString()}` : 'Chapter N/A'
 
-        if (!id || !title || collectedIds.includes(id)) continue
-        manga.push({
-            mangaId: id,
-            title: decodeHTMLEntity(title),
-            imageUrl: image,
-            subtitle: decodeHTMLEntity(subtitle)
-        })
-        collectedIds.push(id)
-    }
+    if (!id || !title || collectedIds.includes(id)) continue
+    manga.push({
+      mangaId: id,
+      title: decodeHTMLEntity(title),
+      imageUrl: image,
+      subtitle: decodeHTMLEntity(subtitle),
+    })
+    collectedIds.push(id)
+  }
 
-    return manga
+  return manga
 }
 
 export const parseTags = ($: cheerio.Root): TagSection[] => {
-    const arrayTags: Tag[] = []
-    for (const tag of $('.proplist a').toArray()) {
-        const title = $(tag).attr('title') ?? ''
+  const arrayTags: Tag[] = []
+  for (const tag of $('.proplist a').toArray()) {
+    const title = $(tag).attr('title') ?? ''
 
-        if (!title) continue
-        arrayTags.push({ id: title, title: title })
-    }
+    if (!title) continue
+    arrayTags.push({ id: title, title: title })
+  }
 
-    const tagSections: TagSection[] = [{ id: 'genres', title: 'genres', tags: arrayTags }]
-    return tagSections
+  const tagSections: TagSection[] = [{ id: 'genres', title: 'genres', tags: arrayTags }]
+  return tagSections
 }
 
 export const parseSearch = ($: cheerio.Root): SearchResultItem[] => {
-    const mangas: SearchResultItem[] = []
-    for (const obj of $('li.novel-item', 'ul.novel-list').toArray()) {
+  const mangas: SearchResultItem[] = []
+  for (const obj of $('li.novel-item', 'ul.novel-list').toArray()) {
+    let image: string = $('img', obj).first().attr('data-src') ?? ''
+    if (image.startsWith('/')) image = 'https://www.mcreader.net' + image
 
-        let image: string = $('img', obj).first().attr('data-src') ?? ''
-        if (image.startsWith('/')) image = 'https://www.mcreader.net' + image
+    const title: string = $('img', obj).first().attr('alt') ?? ''
+    const id = $('a', obj).attr('href')?.replace(/\/$/, '').split('/').pop() ?? ''
+    const getChapter = $('div.novel-stats > strong', obj).text().trim()
+    const chapNumRegex = getChapter.match(/(\d+\.?\d?)+/)
 
-        const title: string = $('img', obj).first().attr('alt') ?? ''
-        const id = $('a', obj).attr('href')?.replace(/\/$/, '').split('/').pop() ?? ''
-        const getChapter = $('div.novel-stats > strong', obj).text().trim()
-        const chapNumRegex = getChapter.match(/(\d+\.?\d?)+/)
+    let chapNum = 0
+    if (chapNumRegex?.[1]) chapNum = Number(chapNumRegex[1])
 
-        let chapNum = 0
-        if (chapNumRegex?.[1]) chapNum = Number(chapNumRegex[1])
+    const subtitle = chapNum ? `Chapter ' ${chapNum.toString()}` : 'Chapter N/A'
+    if (!id || !title) continue
 
-        const subtitle = chapNum ? `Chapter ' ${chapNum.toString()}` : 'Chapter N/A'
-        if (!id || !title) continue
-
-
-        mangas.push({
-            mangaId: id,
-            title: decodeHTMLEntity(title),
-            imageUrl: image,
-            subtitle: decodeHTMLEntity(subtitle)
-        })
-    }
-    return mangas
+    mangas.push({
+      mangaId: id,
+      title: decodeHTMLEntity(title),
+      imageUrl: image,
+      subtitle: decodeHTMLEntity(subtitle),
+    })
+  }
+  return mangas
 }
 
 export const isLastPage = ($: cheerio.Root): boolean => {
-    let isLast = false
-    const pages: number[] = []
+  let isLast = false
+  const pages: number[] = []
 
-    for (const page of $('li', 'ul.pagination').toArray()) {
-        const p = Number($(page).text().trim())
-        if (isNaN(p)) continue
-        pages.push(p)
-    }
+  for (const page of $('li', 'ul.pagination').toArray()) {
+    const p = Number($(page).text().trim())
+    if (isNaN(p)) continue
+    pages.push(p)
+  }
 
-    const lastPage = Math.max(...pages)
-    const currentPage = Number($('li.active').first().text())
-    if (currentPage >= lastPage) isLast = true
-    return isLast
+  const lastPage = Math.max(...pages)
+  const currentPage = Number($('li.active').first().text())
+  if (currentPage >= lastPage) isLast = true
+  return isLast
 }
 
 const decodeHTMLEntity = (str: string): string => {
-    return entities.decodeHTML(str)
+  return entities.decodeHTML(str)
 }
