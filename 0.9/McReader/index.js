@@ -17807,7 +17807,7 @@ var source = (() => {
     }
     const image = $2("img", "div.fixed-img").attr("data-src") ?? "";
     const author = $2("span", "div.author").next().text().trim();
-    const description = decodeHTMLEntity($2(".description").first().text().trim() ?? "");
+    const description = decodeHTMLEntity($2(".description").first().text().trim());
     const arrayTags = [];
     for (const tag of $2("li", "div.categories").toArray()) {
       const title = $2(tag).text().trim();
@@ -17849,14 +17849,14 @@ var source = (() => {
     let sortingIndex = 0;
     for (const chapter of $2("li", "ul.chapter-list").toArray()) {
       const title = decodeHTMLEntity($2("strong.chapter-title", chapter).text().trim());
-      const chapterId = $2("a", chapter).attr("href")?.replace(/\/$/, "")?.split("/").pop() ?? "";
+      const chapterId = $2("a", chapter).attr("href")?.replace(/\/$/, "").split("/").pop() ?? "";
       if (!chapterId)
         continue;
       const datePieces = $2("time.chapter-update", chapter).attr("datetime")?.split(",") ?? [];
-      const date = new Date(String(`${datePieces[0]}, ${datePieces[1]}`));
+      const date = new Date(String(`${datePieces[0] ?? ""}, ${datePieces[1] ?? ""}`));
       const chapNumRegex = title.match(/(\d+)(?:[-.]\d+)?/);
       let chapNum = 0;
-      if (chapNumRegex && chapNumRegex[1]) {
+      if (chapNumRegex?.[1]) {
         let chapRegex = chapNumRegex[1];
         if (chapRegex.includes("-"))
           chapRegex = chapRegex.replace("-", ".");
@@ -17867,7 +17867,7 @@ var source = (() => {
         sourceManga,
         langCode: "\u{1F1EC}\u{1F1E7}",
         chapNum,
-        title: `Chapter ${chapNum}`,
+        title: `Chapter ${chapNum.toString()}`,
         volume: 0,
         publishDate: date,
         sortingIndex
@@ -17901,13 +17901,13 @@ var source = (() => {
     for (const obj of $2("li.novel-item", "ul.novel-list").toArray()) {
       const image = $2("img", obj).first().attr("data-src") ?? "";
       const title = $2("img", obj).first().attr("alt") ?? "";
-      const id = $2("a", obj).attr("href")?.replace(/\/$/, "")?.split("/").pop() ?? "";
+      const id = $2("a", obj).attr("href")?.replace(/\/$/, "").split("/").pop() ?? "";
       const getChapter = $2("div.novel-stats > strong", obj).text().trim();
       const chapNumRegex = getChapter.match(/(\d+\.?\d?)+/);
       let chapNum = 0;
-      if (chapNumRegex && chapNumRegex[1])
+      if (chapNumRegex?.[1])
         chapNum = Number(chapNumRegex[1]);
-      const subtitle = chapNum ? "Chapter " + chapNum : "Chapter N/A";
+      const subtitle = chapNum ? `Chapter ${chapNum.toString()}` : "Chapter N/A";
       if (!id || !title || collectedIds.includes(id))
         continue;
       manga.push({
@@ -17938,13 +17938,13 @@ var source = (() => {
       if (image.startsWith("/"))
         image = "https://www.mcreader.net" + image;
       const title = $2("img", obj).first().attr("alt") ?? "";
-      const id = $2("a", obj).attr("href")?.replace(/\/$/, "")?.split("/").pop() ?? "";
+      const id = $2("a", obj).attr("href")?.replace(/\/$/, "").split("/").pop() ?? "";
       const getChapter = $2("div.novel-stats > strong", obj).text().trim();
       const chapNumRegex = getChapter.match(/(\d+\.?\d?)+/);
       let chapNum = 0;
-      if (chapNumRegex && chapNumRegex[1])
+      if (chapNumRegex?.[1])
         chapNum = Number(chapNumRegex[1]);
-      const subtitle = chapNum ? "Chapter " + chapNum : "Chapter N/A";
+      const subtitle = chapNum ? `Chapter ' ${chapNum.toString()}` : "Chapter N/A";
       if (!id || !title)
         continue;
       mangas.push({
@@ -17988,6 +17988,7 @@ var source = (() => {
       };
       return request;
     }
+    // eslint-disable-next-line @typescript-eslint/require-await
     async interceptResponse(request, response, data2) {
       return data2;
     }
@@ -18056,7 +18057,7 @@ var source = (() => {
             options: tags.tags.map((x) => ({ id: x.id, value: x.title })),
             id: "tags-" + tags.id,
             allowExclusion: false,
-            title: tags.title ?? "",
+            title: tags.title,
             value: {}
           });
         }
@@ -18064,6 +18065,7 @@ var source = (() => {
         console.log(e);
       }
     }
+    // eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-unused-vars
     async saveCloudflareBypassCookies(cookies) {
       this.cloudflareBypassDone = true;
     }
@@ -18112,7 +18114,7 @@ var source = (() => {
       let request;
       if (query.title) {
         request = {
-          url: `${MCR_DOMAIN}/search/?search=${encodeURI(query.title ?? "")}`,
+          url: `${MCR_DOMAIN}/search/?search=${encodeURI(query.title)}`,
           method: "GET"
         };
       } else {
@@ -18122,7 +18124,7 @@ var source = (() => {
         const excludeIncludeGenre = getFilterValue("excludeIncludeGenre");
         const genreParams = genres ? `&included=${excludeIncludeGenre}&genres=${genres}` : "";
         request = {
-          url: `${MCR_DOMAIN}/browse-advanced?sort_by=${sortBy}${genreParams}&results=${page}`,
+          url: `${MCR_DOMAIN}/browse-advanced?sort_by=${sortBy}${genreParams}&results=${page.toString()}`,
           method: "GET"
         };
       }
@@ -18142,7 +18144,7 @@ var source = (() => {
         return import_types3.EndOfPageResults;
       const page = metadata?.page ?? 1;
       const request = {
-        url: `${MCR_DOMAIN}/browse-comics/?results=${page}&filter=views`,
+        url: `${MCR_DOMAIN}/browse-comics/?results=${page.toString()}&filter=views`,
         method: "GET"
       };
       const [response, data2] = await Application.scheduleRequest(request);
@@ -18161,7 +18163,7 @@ var source = (() => {
         return import_types3.EndOfPageResults;
       const page = metadata?.page ?? 1;
       const request = {
-        url: `${MCR_DOMAIN}/browse-comics/?results=${page}&filter=New`,
+        url: `${MCR_DOMAIN}/browse-comics/?results=${page.toString()}&filter=New`,
         method: "GET"
       };
       const [response, data2] = await Application.scheduleRequest(request);
@@ -18180,7 +18182,7 @@ var source = (() => {
         return import_types3.EndOfPageResults;
       const page = metadata?.page ?? 1;
       const request = {
-        url: `${MCR_DOMAIN}/browse-comics/?results=${page}&filter=Updated`,
+        url: `${MCR_DOMAIN}/browse-comics/?results=${page.toString()}&filter=Updated`,
         method: "GET"
       };
       const [response, data2] = await Application.scheduleRequest(request);
