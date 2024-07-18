@@ -17922,14 +17922,13 @@ var source = (() => {
   };
   var parseTags = ($2) => {
     const arrayTags = [];
-    for (const tag of $2("label.checkbox-inline", "div.container").toArray()) {
-      const label = $2(tag).text().trim() ?? "";
-      const id = $2("input", tag).attr("value") ?? "";
-      if (!id || !label)
+    for (const tag of $2(".proplist a").toArray()) {
+      const title = $2(tag).attr("title") ?? "";
+      if (!title)
         continue;
-      arrayTags.push({ id, label });
+      arrayTags.push({ id: title, title });
     }
-    const tagSections = [{ id: "0", label: "genres", tags: arrayTags }];
+    const tagSections = [{ id: "genres", title: "genres", tags: arrayTags }];
     return tagSections;
   };
   var parseSearch = ($2) => {
@@ -18028,29 +18027,41 @@ var source = (() => {
         Application.Selector(this, "getLatestUpdatesSectionItems")
       );
       Application.registerSearchFilter({
-        id: "includeOperator",
+        id: "excludeIncludeGenre",
         type: "dropdown",
-        options: [{ id: "AND", value: "AND" }, { id: "OR", value: "OR" }],
-        value: "AND",
-        title: "Include Operator"
+        options: [
+          { id: "true", value: "Include Genres" },
+          { id: "false", value: "Exclude Genres" }
+        ],
+        value: "true",
+        title: "Genre Filter"
       });
       Application.registerSearchFilter({
-        id: "excludeOperator",
+        id: "sortBy",
         type: "dropdown",
-        options: [{ id: "AND", value: "AND" }, { id: "OR", value: "OR" }],
-        value: "OR",
-        title: "Exclude Operator"
+        options: [
+          { id: "Random", value: "Random" },
+          { id: "New", value: "New" },
+          { id: "Updated", value: "Updated" },
+          { id: "Views", value: "Views" }
+        ],
+        value: "Views",
+        title: "Sort By Filter"
       });
-      const searchTags = await this.getSearchTags();
-      for (const tags of searchTags) {
-        Application.registerSearchFilter({
-          type: "multiselect",
-          options: tags.tags.map((x) => ({ id: x.id, value: x.title })),
-          id: tags.id,
-          allowExclusion: false,
-          title: tags.title ?? "",
-          value: {}
-        });
+      try {
+        const searchTags = await this.getSearchTags();
+        for (const tags of searchTags) {
+          Application.registerSearchFilter({
+            type: "multiselect",
+            options: tags.tags.map((x) => ({ id: x.id, value: x.title })),
+            id: "tags-" + tags.id,
+            allowExclusion: false,
+            title: tags.title ?? "",
+            value: {}
+          });
+        }
+      } catch (e) {
+        console.log(e);
       }
     }
     async saveCloudflareBypassCookies(cookies) {
@@ -18105,8 +18116,13 @@ var source = (() => {
           method: "GET"
         };
       } else {
+        const getFilterValue = (id) => query.filters.find((filter4) => filter4.id === id)?.value;
+        const genres = Object.keys(getFilterValue("genres")).join(",");
+        const sortBy = getFilterValue("sortBy");
+        const excludeIncludeGenre = getFilterValue("excludeIncludeGenre");
+        const genreParams = genres ? `&included=${excludeIncludeGenre}&genres=${genres}` : "";
         request = {
-          url: `${MCR_DOMAIN}/browse-comics?genre=${query?.filters?.map((x) => x.id)[0]}&results=${page}`,
+          url: `${MCR_DOMAIN}/browse-advanced?sort_by=${sortBy}${genreParams}&results=${page}`,
           method: "GET"
         };
       }
