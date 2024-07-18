@@ -18007,7 +18007,7 @@ var source = (() => {
         {
           id: "most_viewed",
           title: "Most Viewed",
-          type: import_types3.DiscoverSectionType.featured
+          type: import_types3.DiscoverSectionType.simpleCarousel
         },
         Application.Selector(this, "getMostViewedSectionItems")
       );
