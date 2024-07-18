@@ -26,7 +26,7 @@ export const parseMangaDetails = ($: cheerio.Root, mangaId: string): SourceManga
     const image = $('img', 'div.fixed-img').attr('data-src') ?? ''
     const author = $('span', 'div.author').next().text().trim()
     
-    const description = decodeHTMLEntity($('.description').first().text().trim() ?? '')
+    const description = decodeHTMLEntity($('.description').first().text().trim())
 
     const arrayTags: Tag[] = []
     for (const tag of $('li', 'div.categories').toArray()) {
@@ -73,15 +73,15 @@ export const parseChapters = ($: cheerio.Root, sourceManga: SourceManga): Chapte
 
     for (const chapter of $('li', 'ul.chapter-list').toArray()) {
         const title = decodeHTMLEntity($('strong.chapter-title', chapter).text().trim())
-        const chapterId: string = $('a', chapter).attr('href')?.replace(/\/$/, '')?.split('/').pop() ?? ''
+        const chapterId: string = $('a', chapter).attr('href')?.replace(/\/$/, '').split('/').pop() ?? ''
         if (!chapterId) continue
 
         const datePieces = $('time.chapter-update', chapter).attr('datetime')?.split(',') ?? []
-        const date = new Date(String(`${datePieces[0]}, ${datePieces[1]}`))
+        const date = new Date(String(`${datePieces[0] ?? ''}, ${datePieces[1] ?? ''}`))
         const chapNumRegex = title.match(/(\d+)(?:[-.]\d+)?/)
 
         let chapNum = 0
-        if (chapNumRegex && chapNumRegex[1]) {
+        if (chapNumRegex?.[1]) {
             let chapRegex = chapNumRegex[1]
             if (chapRegex.includes('-')) chapRegex = chapRegex.replace('-', '.')
             chapNum = Number(chapRegex)
@@ -92,7 +92,7 @@ export const parseChapters = ($: cheerio.Root, sourceManga: SourceManga): Chapte
             sourceManga: sourceManga,
             langCode: '🇬🇧',
             chapNum: chapNum,
-            title: `Chapter ${chapNum}`,
+            title: `Chapter ${chapNum.toString()}`,
             volume: 0,
             publishDate: date,
             sortingIndex
@@ -130,14 +130,14 @@ export const parseViewMore = ($: cheerio.Root): DiscoverSectionItem[] => {
     for (const obj of $('li.novel-item', 'ul.novel-list').toArray()) {
         const image: string = $('img', obj).first().attr('data-src') ?? ''
         const title: string = $('img', obj).first().attr('alt') ?? ''
-        const id = $('a', obj).attr('href')?.replace(/\/$/, '')?.split('/').pop() ?? ''
+        const id = $('a', obj).attr('href')?.replace(/\/$/, '').split('/').pop() ?? ''
         const getChapter = $('div.novel-stats > strong', obj).text().trim()
 
         const chapNumRegex = getChapter.match(/(\d+\.?\d?)+/)
         let chapNum = 0
-        if (chapNumRegex && chapNumRegex[1]) chapNum = Number(chapNumRegex[1])
+        if (chapNumRegex?.[1]) chapNum = Number(chapNumRegex[1])
 
-        const subtitle = chapNum ? 'Chapter ' + chapNum : 'Chapter N/A'
+        const subtitle = chapNum ? `Chapter ${chapNum.toString()}` : 'Chapter N/A'
 
         if (!id || !title || collectedIds.includes(id)) continue
         manga.push({
@@ -173,14 +173,14 @@ export const parseSearch = ($: cheerio.Root): SearchResultItem[] => {
         if (image.startsWith('/')) image = 'https://www.mcreader.net' + image
 
         const title: string = $('img', obj).first().attr('alt') ?? ''
-        const id = $('a', obj).attr('href')?.replace(/\/$/, '')?.split('/').pop() ?? ''
+        const id = $('a', obj).attr('href')?.replace(/\/$/, '').split('/').pop() ?? ''
         const getChapter = $('div.novel-stats > strong', obj).text().trim()
         const chapNumRegex = getChapter.match(/(\d+\.?\d?)+/)
 
         let chapNum = 0
-        if (chapNumRegex && chapNumRegex[1]) chapNum = Number(chapNumRegex[1])
+        if (chapNumRegex?.[1]) chapNum = Number(chapNumRegex[1])
 
-        const subtitle = chapNum ? 'Chapter ' + chapNum : 'Chapter N/A'
+        const subtitle = chapNum ? `Chapter ' ${chapNum.toString()}` : 'Chapter N/A'
         if (!id || !title) continue
 
 

@@ -20,7 +20,6 @@ import {
     SearchResultItem,
     SearchResultsProviding,
     SourceManga,
-    Tag,
     TagSection
 } from '@paperback/types'
 
@@ -58,6 +57,7 @@ class McReaderInterceptor extends PaperbackInterceptor {
         return request
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     override async interceptResponse(request: Request, response: Response, data: ArrayBuffer): Promise<ArrayBuffer> {
         return data
     }
@@ -133,7 +133,7 @@ export class McReaderSource implements McReaderImplementation {
                     options: tags.tags.map(x => ({id: x.id, value: x.title})),
                     id: 'tags-' + tags.id,
                     allowExclusion: false,
-                    title: tags.title ?? '',
+                    title: tags.title,
                     value: {}
                 })
             }
@@ -142,6 +142,7 @@ export class McReaderSource implements McReaderImplementation {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-unused-vars
     async saveCloudflareBypassCookies(cookies: Cookie[]): Promise<void> {
         this.cloudflareBypassDone = true
     }
@@ -201,7 +202,7 @@ export class McReaderSource implements McReaderImplementation {
         // Regular search
         if (query.title) {
             request = {
-                url: `${MCR_DOMAIN}/search/?search=${encodeURI(query.title ?? '')}`,
+                url: `${MCR_DOMAIN}/search/?search=${encodeURI(query.title)}`,
                 method: 'GET'
             }
 
@@ -216,7 +217,7 @@ export class McReaderSource implements McReaderImplementation {
             const genreParams = genres ? `&included=${excludeIncludeGenre}&genres=${genres}` : ''
           
             request = {
-                url: `${MCR_DOMAIN}/browse-advanced?sort_by=${sortBy}${genreParams}&results=${page}`,
+                url: `${MCR_DOMAIN}/browse-advanced?sort_by=${sortBy}${genreParams}&results=${page.toString()}`,
                 method: 'GET'
             }
         }
@@ -241,7 +242,7 @@ export class McReaderSource implements McReaderImplementation {
         const page: number = metadata?.page ?? 1
 
         const request: Request = {
-            url: `${MCR_DOMAIN}/browse-comics/?results=${page}&filter=views`,
+            url: `${MCR_DOMAIN}/browse-comics/?results=${page.toString()}&filter=views`,
             method: 'GET'
         }
         const [response, data] = await Application.scheduleRequest(request)
@@ -264,7 +265,7 @@ export class McReaderSource implements McReaderImplementation {
         const page: number = metadata?.page ?? 1
 
         const request: Request = {
-            url: `${MCR_DOMAIN}/browse-comics/?results=${page}&filter=New`,
+            url: `${MCR_DOMAIN}/browse-comics/?results=${page.toString()}&filter=New`,
             method: 'GET'
         }
         const [response, data] = await Application.scheduleRequest(request)
@@ -286,7 +287,7 @@ export class McReaderSource implements McReaderImplementation {
         const page: number = metadata?.page ?? 1
 
         const request: Request = {
-            url: `${MCR_DOMAIN}/browse-comics/?results=${page}&filter=Updated`,
+            url: `${MCR_DOMAIN}/browse-comics/?results=${page.toString()}&filter=Updated`,
             method: 'GET'
         }
         const [response, data] = await Application.scheduleRequest(request)

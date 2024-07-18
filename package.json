@@ -8,18 +8,19 @@
     "bundle": "npx paperback-cli bundle",
     "serve": "npx paperback-cli serve",
     "test": "npx paperback-cli test",
-    "nodemon": "nodemon"
+    "nodemon": "nodemon",
+    "lint": "eslint ./src"
   },
   "author": "Netsky",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
+    "@eslint/js": "^9.7.0",
     "@tsconfig/recommended": "^1.0.7",
     "@types/cheerio": "^0.22.35",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "@typescript-eslint/parser": "^5.62.0",
-    "eslint": "^7.32.0",
-    "eslint-plugin-modules-newline": "^0.0.6",
-    "typescript": "^4.9.5"
+    "@types/eslint__js": "^8.42.3",
+    "eslint": "^8.57.0",
+    "typescript": "^5.5.3",
+    "typescript-eslint": "^7.16.1"
   },
   "dependencies": {
     "@paperback/toolchain": "^1.0.0-alpha.20",
