@@ -246,7 +246,7 @@ export class McReaderSource implements McReaderImplementation {
     const page: number = metadata?.page ?? 1
 
     const request: Request = {
-      url: `${MCR_DOMAIN}/browse-comics/?results=${page.toString()}&filter=views`,
+      url: `${MCR_DOMAIN}/browse-comics/?results=${page.toString()}&filter=Views`,
       method: 'GET',
     }
     const [response, data] = await Application.scheduleRequest(request)

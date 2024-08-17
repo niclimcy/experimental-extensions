@@ -193,16 +193,12 @@ export const parseSearch = ($: cheerio.Root): SearchResultItem[] => {
 
 export const isLastPage = ($: cheerio.Root): boolean => {
   let isLast = false
-  const pages: number[] = []
 
-  for (const page of $('li', 'ul.pagination').toArray()) {
-    const p = Number($(page).text().trim())
-    if (isNaN(p)) continue
-    pages.push(p)
-  }
+  const pages = $('.mg-pagination-table').first().remove().text().trim().split(' / ')
 
-  const lastPage = Math.max(...pages)
-  const currentPage = Number($('li.active').first().text())
+  const currentPage = Number(pages[0])
+  const lastPage = Number(pages[1])
+
   if (currentPage >= lastPage) isLast = true
   return isLast
 }
