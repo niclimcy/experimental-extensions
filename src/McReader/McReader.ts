@@ -65,7 +65,12 @@ class McReaderInterceptor extends PaperbackInterceptor {
 
 export class McReaderSource implements McReaderImplementation {
   cloudflareBypassDone = false
-  globalRateLimiter = new BasicRateLimiter('rateLimiter', 2, 1)
+  globalRateLimiter = new BasicRateLimiter('rateLimiter', {
+    numberOfRequests: 4,
+    bufferInterval: 15000,
+    ignoreImages: false,
+  })
+
   mainRequestInterceptor = new McReaderInterceptor('main')
   cheerio = cheerio
 
