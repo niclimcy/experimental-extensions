@@ -72,7 +72,6 @@ export class McReaderSource implements McReaderImplementation {
   })
 
   mainRequestInterceptor = new McReaderInterceptor('main')
-  cheerio = cheerio
 
   async initialise(): Promise<void> {
     this.globalRateLimiter.registerInterceptor()
@@ -161,7 +160,7 @@ export class McReaderSource implements McReaderImplementation {
 
     const [response, data] = await Application.scheduleRequest(request)
     this.checkCloudflareStatus(response.status)
-    const $ = this.cheerio.load(Application.arrayBufferToUTF8String(data))
+    const $ = cheerio.load(Application.arrayBufferToUTF8String(data))
     return parseTags($)
   }
 
@@ -172,7 +171,7 @@ export class McReaderSource implements McReaderImplementation {
     }
     const [response, data] = await Application.scheduleRequest(request)
     this.checkCloudflareStatus(response.status)
-    const $ = this.cheerio.load(Application.arrayBufferToUTF8String(data))
+    const $ = cheerio.load(Application.arrayBufferToUTF8String(data))
     return parseMangaDetails($, mangaId)
   }
 
@@ -184,7 +183,7 @@ export class McReaderSource implements McReaderImplementation {
 
     const [response, data] = await Application.scheduleRequest(request)
     this.checkCloudflareStatus(response.status)
-    const $ = this.cheerio.load(Application.arrayBufferToUTF8String(data))
+    const $ = cheerio.load(Application.arrayBufferToUTF8String(data))
     return parseChapters($, sourceManga)
   }
 
@@ -195,7 +194,7 @@ export class McReaderSource implements McReaderImplementation {
     }
     const [response, data] = await Application.scheduleRequest(request)
     this.checkCloudflareStatus(response.status)
-    const $ = this.cheerio.load(Application.arrayBufferToUTF8String(data))
+    const $ = cheerio.load(Application.arrayBufferToUTF8String(data))
     return parseChapterDetails($, chapter)
   }
 
@@ -228,7 +227,7 @@ export class McReaderSource implements McReaderImplementation {
     }
 
     const [response, data] = await Application.scheduleRequest(request)
-    const $ = this.cheerio.load(Application.arrayBufferToUTF8String(data))
+    const $ = cheerio.load(Application.arrayBufferToUTF8String(data))
     this.checkCloudflareStatus(response.status)
     const manga = parseSearch($)
 
@@ -251,7 +250,7 @@ export class McReaderSource implements McReaderImplementation {
     }
     const [response, data] = await Application.scheduleRequest(request)
     this.checkCloudflareStatus(response.status)
-    const $ = this.cheerio.load(Application.arrayBufferToUTF8String(data))
+    const $ = cheerio.load(Application.arrayBufferToUTF8String(data))
     const manga = parseViewMore($)
     metadata = !isLastPage($) ? { page: page + 1 } : undefined
 
@@ -273,7 +272,7 @@ export class McReaderSource implements McReaderImplementation {
     }
     const [response, data] = await Application.scheduleRequest(request)
     this.checkCloudflareStatus(response.status)
-    const $ = this.cheerio.load(Application.arrayBufferToUTF8String(data))
+    const $ = cheerio.load(Application.arrayBufferToUTF8String(data))
     const manga = parseViewMore($)
     metadata = !isLastPage($) ? { page: page + 1 } : undefined
 
@@ -295,7 +294,7 @@ export class McReaderSource implements McReaderImplementation {
     }
     const [response, data] = await Application.scheduleRequest(request)
     this.checkCloudflareStatus(response.status)
-    const $ = this.cheerio.load(Application.arrayBufferToUTF8String(data))
+    const $ = cheerio.load(Application.arrayBufferToUTF8String(data))
     const manga = parseViewMore($)
     metadata = !isLastPage($) ? { page: page + 1 } : undefined
 

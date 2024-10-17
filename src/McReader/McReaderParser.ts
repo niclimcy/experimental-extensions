@@ -10,9 +10,10 @@ import {
   ContentRating,
 } from '@paperback/types'
 
-import entities = require('entities')
+import { CheerioAPI } from 'cheerio'
+import { decodeHTML } from 'entities'
 
-export const parseMangaDetails = ($: cheerio.Root, mangaId: string): SourceManga => {
+export const parseMangaDetails = ($: CheerioAPI, mangaId: string): SourceManga => {
   const primaryTitle = $('.novel-title').text().trim()
 
   const secondaryTitles: string[] = []
@@ -66,7 +67,7 @@ export const parseMangaDetails = ($: cheerio.Root, mangaId: string): SourceManga
   } as SourceManga
 }
 
-export const parseChapters = ($: cheerio.Root, sourceManga: SourceManga): Chapter[] => {
+export const parseChapters = ($: CheerioAPI, sourceManga: SourceManga): Chapter[] => {
   const chapters: Chapter[] = []
   let sortingIndex = 0
 
@@ -77,7 +78,7 @@ export const parseChapters = ($: cheerio.Root, sourceManga: SourceManga): Chapte
 
     const datePieces = $('time.chapter-update', chapter).attr('datetime')?.split(',') ?? []
     const date = new Date(String(`${datePieces[0] ?? ''}, ${datePieces[1] ?? ''}`))
-    const chapNumRegex = title.match(/(\d+)(?:[-.]\d+)?/)
+    const chapNumRegex = /(\d+)(?:[-.]\d+)?/.exec(title)
 
     let chapNum = 0
     if (chapNumRegex?.[1]) {
@@ -106,7 +107,7 @@ export const parseChapters = ($: cheerio.Root, sourceManga: SourceManga): Chapte
   return chapters
 }
 
-export const parseChapterDetails = ($: cheerio.Root, chapter: Chapter): ChapterDetails => {
+export const parseChapterDetails = ($: CheerioAPI, chapter: Chapter): ChapterDetails => {
   const pages: string[] = []
   for (const img of $('img', 'div#chapter-reader').toArray()) {
     let image = $(img).attr('src') ?? ''
@@ -122,7 +123,7 @@ export const parseChapterDetails = ($: cheerio.Root, chapter: Chapter): ChapterD
   }
 }
 
-export const parseViewMore = ($: cheerio.Root): DiscoverSectionItem[] => {
+export const parseViewMore = ($: CheerioAPI): DiscoverSectionItem[] => {
   const manga: DiscoverSectionItem[] = []
   const collectedIds: string[] = []
 
@@ -132,7 +133,7 @@ export const parseViewMore = ($: cheerio.Root): DiscoverSectionItem[] => {
     const id = $('a', obj).attr('href')?.replace(/\/$/, '').split('/').pop() ?? ''
     const getChapter = $('div.novel-stats > strong', obj).text().trim()
 
-    const chapNumRegex = getChapter.match(/(\d+\.?\d?)+/)
+    const chapNumRegex = /(\d+\.?\d?)+/.exec(getChapter)
     let chapNum = 0
     if (chapNumRegex?.[1]) chapNum = Number(chapNumRegex[1])
 
@@ -151,7 +152,7 @@ export const parseViewMore = ($: cheerio.Root): DiscoverSectionItem[] => {
   return manga
 }
 
-export const parseTags = ($: cheerio.Root): TagSection[] => {
+export const parseTags = ($: CheerioAPI): TagSection[] => {
   const arrayTags: Tag[] = []
   for (const tag of $('.proplist a').toArray()) {
     const title = $(tag).attr('title') ?? ''
@@ -164,7 +165,7 @@ export const parseTags = ($: cheerio.Root): TagSection[] => {
   return tagSections
 }
 
-export const parseSearch = ($: cheerio.Root): SearchResultItem[] => {
+export const parseSearch = ($: CheerioAPI): SearchResultItem[] => {
   const mangas: SearchResultItem[] = []
   for (const obj of $('li.novel-item', 'ul.novel-list').toArray()) {
     let image: string = $('img', obj).first().attr('data-src') ?? ''
@@ -173,7 +174,7 @@ export const parseSearch = ($: cheerio.Root): SearchResultItem[] => {
     const title: string = $('img', obj).first().attr('alt') ?? ''
     const id = $('a', obj).attr('href')?.replace(/\/$/, '').split('/').pop() ?? ''
     const getChapter = $('div.novel-stats > strong', obj).text().trim()
-    const chapNumRegex = getChapter.match(/(\d+\.?\d?)+/)
+    const chapNumRegex = /(\d+\.?\d?)+/.exec(getChapter)
 
     let chapNum = 0
     if (chapNumRegex?.[1]) chapNum = Number(chapNumRegex[1])
@@ -191,7 +192,7 @@ export const parseSearch = ($: cheerio.Root): SearchResultItem[] => {
   return mangas
 }
 
-export const isLastPage = ($: cheerio.Root): boolean => {
+export const isLastPage = ($: CheerioAPI): boolean => {
   let isLast = false
 
   const pages = $('.mg-pagination-table').first().remove().text().trim().split(' / ')
@@ -204,5 +205,5 @@ export const isLastPage = ($: cheerio.Root): boolean => {
 }
 
 const decodeHTMLEntity = (str: string): string => {
-  return entities.decodeHTML(str)
+  return decodeHTML(str)
 }

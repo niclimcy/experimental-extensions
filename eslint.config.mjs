@@ -15,5 +15,8 @@ export default tseslint.config(
         project: true,
       },
     },
+    rules: {
+      '@typescript-eslint/no-unsafe-argument': 'off',
+    },
   },
 )
